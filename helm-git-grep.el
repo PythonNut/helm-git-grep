@@ -140,8 +140,8 @@ Examples:
    ;; search all files except those matching *.dvi
 
 Each pathspec need not be quoted by single quotes, because
-`helm-git-grep' runs git with `start-process', which does not use
-an inferior shell.
+`helm-git-grep' runs git with `start-file-process', which does
+not use an inferior shell.
 
 For more information about pathspec,
 see https://git-scm.com/docs/gitglossary#def_pathspec.
@@ -314,13 +314,20 @@ newline return an empty string."
   "Retrieve candidates from result of git grep."
   (helm-aif (helm-attr 'base-directory)
       (let ((default-directory it))
-        (apply 'start-process "git-grep-process" nil "git" (helm-git-grep-args))) '()))
+        (apply 'start-file-process
+               "git-grep-process"
+               nil
+               "git"
+               (helm-git-grep-args)))
+    '()))
 
 (defun helm-git-grep-submodule-grep-process ()
   "Retrieve candidates from result of git grep submodules."
   (helm-aif (helm-attr 'base-directory)
       (let ((default-directory it))
-        (apply 'start-process "git-submodule-grep-process" nil
+        (apply 'start-file-process
+               "git-submodule-grep-process"
+               nil
                (helm-git-grep-submodule-grep-command)))
     '()))
 
@@ -647,7 +654,7 @@ which is defined by `helm-git-grep-pathspecs'."
           (erase-buffer)
           (insert (format "git ls-files %s\n\n"
                           (helm-git-grep-concat-string-list args))))
-        (when (apply 'call-process "git" nil buf nil
+        (when (apply 'process-file "git" nil buf nil
                          (append '("ls-files") args)))
           (display-buffer buf))
     (message helm-git-grep-pathspec-disabled-message)))
