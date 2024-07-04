@@ -277,6 +277,12 @@ newline return an empty string."
       (format "-%d" helm-git-grep-showing-leading-and-trailing-lines-number)
     (when strp "")))
 
+(defun helm-git-grep--split-pattern (pattern)
+  "Split PATTERN according to user preferences (`helm-git-grep-quotes')."
+  (if helm-git-grep-quotes
+      (split-string-and-unquote pattern " +")
+    (split-string pattern " +" t)))
+
 (defun helm-git-grep-args ()
   "Create arguments of `helm-git-grep-process' in `helm-git-grep'."
   (delq nil
@@ -289,9 +295,7 @@ newline return an empty string."
           (apply 'append
                  (mapcar
                   (lambda (x) (list "-e" x "--and"))
-                  (if helm-git-grep-quotes
-                      (split-string-and-unquote helm-pattern " +")
-                    (split-string helm-pattern " +" t)))))
+                  (helm-git-grep--split-pattern  helm-pattern))))
          (helm-git-grep-pathspec-args))))
 
 (defun helm-git-grep-submodule-grep-command ()
@@ -303,7 +307,7 @@ newline return an empty string."
                (helm-git-grep-showing-leading-and-trailing-lines-option t)
                 (mapconcat (lambda (x)
                              (format "-e %s " (shell-quote-argument x)))
-                           (split-string helm-pattern " +" t)
+                           (helm-git-grep--split-pattern helm-pattern)
                            "--and "))))
 
 (defun helm-git-grep-process ()
@@ -473,7 +477,7 @@ if MARK is t, Set mark."
 
 (defun helm-git-grep-highlight-match (content)
   "Highlight matched text with `helm-git-grep-match' face in CONTENT."
-  (dolist (input (delete "" (split-string helm-input)))
+  (dolist (input (delete "" (helm-git-grep--split-pattern helm-input)))
     (if (condition-case nil
             (string-match input content)
           (error nil))
