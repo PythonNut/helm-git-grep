@@ -474,7 +474,9 @@ if MARK is t, Set mark."
 (defun helm-git-grep-highlight-match (content)
   "Highlight matched text with `helm-git-grep-match' face in CONTENT."
   (dolist (input (delete "" (split-string helm-input)))
-    (if (string-match input content)
+    (if (condition-case nil
+            (string-match input content)
+          (error nil))
         (put-text-property (match-beginning 0) (match-end 0)
                            'face 'helm-git-grep-match content)))
   content)
