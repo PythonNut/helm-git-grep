@@ -44,7 +44,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(eval-when-compile (require 'cl-lib))
 (require 'helm)
 (require 'helm-files)
 (require 'compile)                      ; for define-compilation-mode
@@ -371,12 +371,12 @@ newline return an empty string."
         new-buf)
     (when (get-buffer buf)
       (setq new-buf (read-string prompt buf))
-      (loop for b in (helm-buffer-list)
-            when (and (string= new-buf b)
-                      (not (y-or-n-p
-                            (format "Buffer `%s' already exists overwrite? "
-                                    new-buf))))
-            do (setq new-buf (read-string prompt "*hggrep ")))
+      (cl-loop for b in (helm-buffer-list)
+               when (and (string= new-buf b)
+                         (not (y-or-n-p
+                               (format "Buffer `%s' already exists overwrite? "
+                                       new-buf))))
+               do (setq new-buf (read-string prompt "*hggrep ")))
       (setq buf new-buf))
     (with-current-buffer (get-buffer-create buf)
       (setq buffer-read-only t)
@@ -414,11 +414,11 @@ if MARK is t, Set mark."
                              (and (helm-candidate-buffer)
                                   (buffer-local-value
                                    'default-directory (helm-candidate-buffer)))))))
-    (case where
-          (other-window (find-file-other-window full-filename))
-          (other-frame  (find-file-other-frame full-filename))
-          (grep         (helm-git-grep-save-results-1))
-          (t            (find-file full-filename)))
+    (cl-case where
+      (other-window (find-file-other-window full-filename))
+      (other-frame  (find-file-other-frame full-filename))
+      (grep         (helm-git-grep-save-results-1))
+      (t            (find-file full-filename)))
     (unless (or (eq where 'grep))
       (helm-goto-line lineno)
       (goto-char (+ (point) (1- columnno))))
